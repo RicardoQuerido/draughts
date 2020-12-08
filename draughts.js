@@ -48,7 +48,7 @@ var primitiveType = null;
  
 // To allow choosing the projection type
 
-var projectionType = 0;
+var projectionType = 1;
 
 // NEW --- The viewer position
 
@@ -454,7 +454,7 @@ function setEventListeners(){
 				
 		// Getting the selection
 		
-		var p = projection.selectedIndex;
+		// var p = projection.selectedIndex;
 				
 		switch(p){
 			
