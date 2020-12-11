@@ -20,6 +20,18 @@ function emptyModelFeatures() {
 
 	this.normals = [];
 
+	this.colors = [];
+	
+	this.chageColor = (r,g,b) => {
+		this.colors = [];
+		for (let k = 0; k < this.vertices.length; k++) {
+			this.colors.push(r);
+			this.colors.push(g);
+			this.colors.push(b);
+		}
+	}
+
+
 	// Transformation parameters
 
 	// Displacement vector
@@ -65,16 +77,6 @@ function emptyModelFeatures() {
 	this.rotYYDir = 1;
 
 	this.rotZZDir = 1;
-
-	// Material features
-
-	this.kAmbi = [0.2, 0.2, 0.2];
-
-	this.kDiff = [0.7, 0.7, 0.7];
-
-	this.kSpec = [0.7, 0.7, 0.7];
-
-	this.nPhong = 100;
 }
 
 function singleTriangleModel() {
@@ -159,7 +161,7 @@ function simpleCubeModel({
 
 
 	cube.colors = [];
-
+	
 	for (let k = 0; k < cube.vertices.length; k++) {
 		cube.colors.push(r);
 		cube.colors.push(g);
@@ -345,6 +347,8 @@ function cylinderModel({
 
 
 let sceneModels = [];
+let boardTileModels = [];
+let pieceModels = [];
 let i, j;
 
 // Tabuleiro
@@ -381,7 +385,7 @@ for (i = 0; i < 8; i++) {
 		boardTile.ty = tyBoardTile;
 		boardTile.tz = tzBoardTile;
 
-		sceneModels.push(boardTile);
+		boardTileModels.push(boardTile);
 
 		txBoardTile += 0.25;
 	}
@@ -389,7 +393,6 @@ for (i = 0; i < 8; i++) {
 	tzBoardTile -= 0.25;
 }
 
-console.log(sceneModels);
 
 
 let piece;
@@ -419,7 +422,7 @@ for (i = 0; i < 3; i++) {
 		piece.ty = tyPiece;
 		piece.tz = tzPiece;
 
-		sceneModels.push(piece);
+		pieceModels.push(piece);
 
 		txPiece += 0.5;
 	}
@@ -448,10 +451,11 @@ for (i = 0; i < 3; i++) {
 		piece.ty = tyPiece;
 		piece.tz = tzPiece;
 
-		sceneModels.push(piece);
+		pieceModels.push(piece);
 
 		txPiece += 0.5;
 	}
 
 	tzPiece -= 0.25;
 }
+

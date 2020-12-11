@@ -22,25 +22,23 @@ var shaderProgram = null;
 
 var triangleVertexPositionBuffer = null;
 
-var triangleVertexNormalBuffer = null;
+var triangleVertexColorBuffer = null;
 
 // The GLOBAL transformation parameters
-
-var globalAngleYY = 0.0;
 
 var globalTx = 0.0;
 
 var globalTy = 0.0;
 
-var globalTz = 0.0;
+var globalTz = -3.5;
 
-// GLOBAL Animation controls
+// The rotation angles in degrees
 
-var globalRotationYY_ON = 0;
+var angleXX = 0.0;
 
-var globalRotationYY_DIR = 1;
+var angleYY = 0.0;
 
-var globalRotationYY_SPEED = 1;
+var angleZZ = 0.0;
 
 // To allow choosing the way of drawing the model triangles
 
@@ -56,6 +54,9 @@ var projectionType = 1;
 
 var pos_Viewer = [0.0, 0.0, 0.0, 1.0];
 
+let highlightedPiece = 0;
+
+
 
 //----------------------------------------------------------------------------
 //
@@ -66,7 +67,7 @@ var elapsedTime = 0;
 
 var frameCount = 0;
 
-var lastfpsTime = new Date().getTime();;
+var lastfpsTime = new Date().getTime();
 
 
 function countFrames() {
@@ -105,35 +106,6 @@ function countFrames() {
 // Handling the Vertex Coordinates and the Vertex Normal Vectors
 
 function initBuffers(model) {
-
-	// // Vertex Coordinates
-
-	// triangleVertexPositionBuffer = gl.createBuffer();
-	// gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-	// gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
-	// triangleVertexPositionBuffer.itemSize = 3;
-	// triangleVertexPositionBuffer.numItems = model.vertices.length / 3;
-
-	// // Associating to the vertex shader
-
-	// gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-	// 	triangleVertexPositionBuffer.itemSize,
-	// 	gl.FLOAT, false, 0, 0);
-
-	// // Vertex Normal Vectors
-
-	// triangleVertexNormalBuffer = gl.createBuffer();
-	// gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexNormalBuffer);
-	// gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.normals), gl.STATIC_DRAW);
-	// triangleVertexNormalBuffer.itemSize = 3;
-	// triangleVertexNormalBuffer.numItems = model.normals.length / 3;
-
-	// // Associating to the vertex shader
-
-	// gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute,
-	// 	triangleVertexNormalBuffer.itemSize,
-	// 	gl.FLOAT, false, 0, 0);
-
 
 	// Coordinates
 
@@ -198,43 +170,9 @@ function drawModel(model,
 
 	// This can be done in a better way !!
 
-	// Vertex Coordinates and Vertex Normal Vectors
+	// Vertex Coordinates and Vertex Color Vectors
 
 	initBuffers(model);
-
-	// Material properties
-
-	gl.uniform3fv(gl.getUniformLocation(shaderProgram, "k_ambient"),
-		flatten(model.kAmbi));
-
-	gl.uniform3fv(gl.getUniformLocation(shaderProgram, "k_diffuse"),
-		flatten(model.kDiff));
-
-	gl.uniform3fv(gl.getUniformLocation(shaderProgram, "k_specular"),
-		flatten(model.kSpec));
-
-	gl.uniform1f(gl.getUniformLocation(shaderProgram, "shininess"),
-		model.nPhong);
-
-	// Light Sources
-
-	var numLights = lightSources.length;
-
-	gl.uniform1i(gl.getUniformLocation(shaderProgram, "numLights"),
-		numLights);
-
-	//Light Sources
-
-	for (var i = 0; i < lightSources.length; i++) {
-		gl.uniform1i(gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].isOn"),
-			lightSources[i].isOn);
-
-		gl.uniform4fv(gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].position"),
-			flatten(lightSources[i].getPosition()));
-
-		gl.uniform3fv(gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].intensities"),
-			flatten(lightSources[i].getIntensity()));
-	}
 
 	// Drawing 
 
@@ -277,59 +215,22 @@ function drawScene() {
 
 	// Computing the Projection Matrix
 
-	if (projectionType == 0) {
+	// A standard view volume.
 
-		// For now, the default orthogonal view volume
+	// Viewer is at (0,0,0)
 
-		pMatrix = ortho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+	// Ensure that the model is "inside" the view volume
 
-		// Global transformation !!
+	pMatrix = perspective(45, 1, 0.05, 15);
 
-		globalTx = 0.0;
-		globalTy = 0.0;
-		globalTz = 0.0;
+	// NEW --- The viewer is on (0,0,0)
 
-		// NEW --- The viewer is on the ZZ axis at an indefinite distance
+	pos_Viewer[0] = 0.0;
+	pos_Viewer[1] = 0.0;
+	pos_Viewer[2] = 0.0;
 
-		pos_Viewer[0] = pos_Viewer[1] = pos_Viewer[3] = 0.0;
+	pos_Viewer[3] = 1.0;
 
-		pos_Viewer[2] = 1.0;
-
-		// TO BE DONE !
-
-		// Allow the user to control the size of the view volume
-	} else {
-
-		// A standard view volume.
-
-		// Viewer is at (0,0,0)
-
-		// Ensure that the model is "inside" the view volume
-
-		pMatrix = perspective(45, 1, 0.05, 15);
-
-		// Global transformation !!
-
-		globalTx = 0;
-		globalTy = 0;
-		globalTz = -3.5;
-
-
-
-
-
-		// NEW --- The viewer is on (0,0,0)
-
-		pos_Viewer[0] = 0.0;
-		pos_Viewer[1] = 0.0;
-		pos_Viewer[2] = 0.0;
-
-		pos_Viewer[3] = 1.0;
-
-		// TO BE DONE !
-
-		// Allow the user to control the size of the view volume
-	}
 
 	// Passing the Projection Matrix to apply the current projection
 
@@ -347,35 +248,6 @@ function drawScene() {
 	mvMatrix = mult(mvMatrix, translationMatrix(globalTx, globalTy, globalTz));
 	mvMatrix = mult(mvMatrix, rotationXXMatrix(30));
 
-	// mvMatrix = rotationXXMatrix( 0 );
-
-	// NEW - Updating the position of the light sources, if required
-
-	// FOR EACH LIGHT SOURCE
-
-	for (var i = 0; i < lightSources.length; i++) {
-		// Animating the light source, if defined
-
-		var lightSourceMatrix = mat4();
-
-		if (!lightSources[i].isOff()) {
-
-			// COMPLETE THE CODE FOR THE OTHER ROTATION AXES
-
-			if (lightSources[i].isRotYYOn()) {
-				lightSourceMatrix = mult(
-					lightSourceMatrix,
-					rotationYYMatrix(lightSources[i].getRotAngleYY()));
-			}
-		}
-
-		// NEW Passing the Light Souree Matrix to apply
-
-		var lsmUniform = gl.getUniformLocation(shaderProgram, "allLights[" + String(i) + "].lightSourceMatrix");
-
-		gl.uniformMatrix4fv(lsmUniform, false, new Float32Array(flatten(lightSourceMatrix)));
-	}
-
 	// Instantianting all scene models
 
 	for (var i = 0; i < sceneModels.length; i++) {
@@ -383,6 +255,19 @@ function drawScene() {
 			mvMatrix,
 			primitiveType);
 	}
+
+	for (var i = 0; i < boardTileModels.length; i++) {
+		drawModel(boardTileModels[i],
+			mvMatrix,
+			primitiveType);
+	}
+
+	for (var i = 0; i < pieceModels.length; i++) {
+		drawModel(pieceModels[i],
+			mvMatrix,
+			primitiveType);
+	}
+
 
 	// NEW - Counting the frames
 
@@ -396,57 +281,120 @@ function drawScene() {
 
 // Animation --- Updating transformation parameters
 
-var lastTime = 0;
-
 function animate() {
 
-	var timeNow = new Date().getTime();
+}
+//----------------------------------------------------------------------------
 
-	if (lastTime != 0) {
+// Handling keyboard events
 
-		var elapsed = timeNow - lastTime;
+// Adapted from www.learningwebgl.com
 
-		// Global rotation
+var currentlyPressedKeys = {};
+pieceModels[highlightedPiece].chageColor(1, 0, 1);
 
-		if (globalRotationYY_ON) {
+function handleKeys() {
 
-			globalAngleYY += globalRotationYY_DIR * globalRotationYY_SPEED * (90 * elapsed) / 1000.0;
-		}
-
-		// For every model --- Local rotations
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			if (sceneModels[i].rotXXOn) {
-
-				sceneModels[i].rotAngleXX += sceneModels[i].rotXXDir * sceneModels[i].rotXXSpeed * (90 * elapsed) / 1000.0;
-			}
-
-			if (sceneModels[i].rotYYOn) {
-
-				sceneModels[i].rotAngleYY += sceneModels[i].rotYYDir * sceneModels[i].rotYYSpeed * (90 * elapsed) / 1000.0;
-			}
-
-			if (sceneModels[i].rotZZOn) {
-
-				sceneModels[i].rotAngleZZ += sceneModels[i].rotZZDir * sceneModels[i].rotZZSpeed * (90 * elapsed) / 1000.0;
-			}
-		}
-
-		// Rotating the light sources
-
-		for (var i = 0; i < lightSources.length; i++) {
-			if (lightSources[i].isRotYYOn()) {
-
-				var angle = lightSources[i].getRotAngleYY() + lightSources[i].getRotationSpeed() * (90 * elapsed) / 1000.0;
-
-				lightSources[i].setRotAngleYY(angle);
-			}
+	// Page Up
+	if (currentlyPressedKeys[33]) {
+		globalTz += 0.25;
+	}
+	// Page Down
+	if (currentlyPressedKeys[34]) {
+		globalTz -= 0.25;
+	}
+	// Left cursor key
+	if (currentlyPressedKeys[37]) {
+		currentlyPressedKeys[37] = false;
+		if (highlightedPiece > 0) {
+			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			highlightedPiece -= 1;
+			pieceModels[highlightedPiece].chageColor(1, 0, 1);
 		}
 	}
+	// Right cursor key
+	if (currentlyPressedKeys[39]) {
+		currentlyPressedKeys[39] = false;
 
-	lastTime = timeNow;
+		if (highlightedPiece < (pieceModels.length / 2) - 1) {
+			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			highlightedPiece += 1;
+			pieceModels[highlightedPiece].chageColor(1, 0, 1);
+		}
+
+	}
+	// Up cursor key
+	if (currentlyPressedKeys[38]) {
+		currentlyPressedKeys[38] = false;
+
+		if (highlightedPiece < (pieceModels.length / 2) - 4) {
+			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			highlightedPiece += 4;
+			pieceModels[highlightedPiece].chageColor(1, 0, 1);
+		}
+
+	}
+	// Down cursor key
+	if (currentlyPressedKeys[40]) {
+		currentlyPressedKeys[40] = false;
+
+		if (highlightedPiece > 3) {
+			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			highlightedPiece -= 4;
+			pieceModels[highlightedPiece].chageColor(1, 0, 1);
+		}
+	}
 }
 
+//----------------------------------------------------------------------------
+
+// Handling mouse events
+
+var mouseDown = false;
+
+var lastMouseX = null;
+
+var lastMouseY = null;
+
+function handleMouseDown(event) {
+
+	mouseDown = true;
+
+	lastMouseX = event.clientX;
+
+	lastMouseY = event.clientY;
+}
+
+function handleMouseUp(event) {
+
+	mouseDown = false;
+}
+
+function handleMouseMove(event) {
+
+	if (!mouseDown) {
+
+		return;
+	}
+
+	// Rotation angles proportional to cursor displacement
+
+	var newX = event.clientX;
+
+	var newY = event.clientY;
+
+	var deltaX = newX - lastMouseX;
+
+	angleYY += radians(10 * deltaX)
+
+	var deltaY = newY - lastMouseY;
+
+	angleXX += radians(10 * deltaY)
+
+	lastMouseX = newX
+
+	lastMouseY = newY;
+}
 
 //----------------------------------------------------------------------------
 
@@ -455,6 +403,10 @@ function animate() {
 function tick() {
 
 	requestAnimFrame(tick);
+
+	// NEW --- Processing keyboard events 
+
+	handleKeys();
 
 	drawScene();
 
@@ -473,29 +425,31 @@ function outputInfos() {
 
 //----------------------------------------------------------------------------
 
-function setEventListeners() {
+function setEventListeners(canvas) {
 
-	// Dropdown list
+	// NEW ---Handling the mouse
 
-	var projection = document.getElementById("projection-selection");
+	canvas.onmousedown = handleMouseDown;
 
-	projection.addEventListener("click", function () {
+	document.onmouseup = handleMouseUp;
 
-		// Getting the selection
+	document.onmousemove = handleMouseMove;
 
-		// var p = projection.selectedIndex;
+	// NEW ---Handling the keyboard
 
-		switch (p) {
+	function handleKeyDown(event) {
 
-			case 0:
-				projectionType = 0;
-				break;
+		currentlyPressedKeys[event.keyCode] = true;
+	}
 
-			case 1:
-				projectionType = 1;
-				break;
-		}
-	});
+	function handleKeyUp(event) {
+
+		currentlyPressedKeys[event.keyCode] = false;
+	}
+
+	document.onkeydown = handleKeyDown;
+
+	document.onkeyup = handleKeyUp;
 
 	// Dropdown list
 
@@ -523,157 +477,7 @@ function setEventListeners() {
 		}
 	});
 
-	// Button events
 
-	document.getElementById("XX-on-off-button").onclick = function () {
-
-		// Switching on / off
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			if (sceneModels[i].rotXXOn) {
-
-				sceneModels[i].rotXXOn = false;
-			} else {
-				sceneModels[i].rotXXOn = true;
-			}
-		}
-	};
-
-	document.getElementById("XX-direction-button").onclick = function () {
-
-		// Switching the direction
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			if (sceneModels[i].rotXXDir == 1) {
-
-				sceneModels[i].rotXXDir = -1;
-			} else {
-				sceneModels[i].rotXXDir = 1;
-			}
-		}
-	};
-
-	document.getElementById("XX-slower-button").onclick = function () {
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			sceneModels[i].rotXXSpeed *= 0.75;
-		}
-	};
-
-	document.getElementById("XX-faster-button").onclick = function () {
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			sceneModels[i].rotXXSpeed *= 1.25;
-		}
-	};
-
-	document.getElementById("YY-on-off-button").onclick = function () {
-
-		// Switching on / off
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			if (sceneModels[i].rotYYOn) {
-
-				sceneModels[i].rotYYOn = false;
-			} else {
-				sceneModels[i].rotYYOn = true;
-			}
-		}
-	};
-
-	document.getElementById("YY-direction-button").onclick = function () {
-
-		// Switching the direction
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			if (sceneModels[i].rotYYDir == 1) {
-
-				sceneModels[i].rotYYDir = -1;
-			} else {
-				sceneModels[i].rotYYDir = 1;
-			}
-		}
-	};
-
-	document.getElementById("YY-slower-button").onclick = function () {
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			sceneModels[i].rotYYSpeed *= 0.75;
-		}
-	};
-
-	document.getElementById("YY-faster-button").onclick = function () {
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			sceneModels[i].rotYYSpeed *= 1.25;
-		}
-	};
-
-	document.getElementById("ZZ-on-off-button").onclick = function () {
-
-		// Switching on / off
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			if (sceneModels[i].rotZZOn) {
-
-				sceneModels[i].rotZZOn = false;
-			} else {
-				sceneModels[i].rotZZOn = true;
-			}
-		}
-	};
-
-	document.getElementById("ZZ-direction-button").onclick = function () {
-
-		// Switching the direction
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			if (sceneModels[i].rotZZDir == 1) {
-
-				sceneModels[i].rotZZDir = -1;
-			} else {
-				sceneModels[i].rotZZDir = 1;
-			}
-		}
-	};
-
-	document.getElementById("ZZ-slower-button").onclick = function () {
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			sceneModels[i].rotZZSpeed *= 0.75;
-		}
-	};
-
-	document.getElementById("ZZ-faster-button").onclick = function () {
-
-		// For every model
-
-		for (var i = 0; i < sceneModels.length; i++) {
-			sceneModels[i].rotZZSpeed *= 1.25;
-		}
-	};
 }
 
 //----------------------------------------------------------------------------
@@ -724,13 +528,13 @@ function initWebGL(canvas) {
 
 function runWebGL() {
 
-	var canvas = document.getElementById("my-canvas");
+	let canvas = document.getElementById("my-canvas");
 
 	initWebGL(canvas);
 
 	shaderProgram = initShaders(gl);
 
-	setEventListeners();
+	setEventListeners(canvas);
 
 	tick(); // A timer controls the rendering / animation    
 
