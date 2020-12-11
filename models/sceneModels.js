@@ -109,7 +109,11 @@ function singleTriangleModel() {
 }
 
 
-function simpleCubeModel() {
+function simpleCubeModel({
+	r = 0.5,
+	g = 0.25,
+	b = 0.00
+} = {}) {
 
 	var cube = new emptyModelFeatures();
 
@@ -152,6 +156,15 @@ function simpleCubeModel() {
 		1.000000, -1.000000, -1.000000,
 		1.000000, -1.000000, 1.000000,
 	];
+
+
+	cube.colors = [];
+
+	for (let k = 0; k < cube.vertices.length; k++) {
+		cube.colors.push(r);
+		cube.colors.push(g);
+		cube.colors.push(b);
+	}
 
 	computeVertexNormals(cube.vertices, cube.normals);
 
@@ -222,7 +235,11 @@ function sphereModel(subdivisionDepth = 2) {
 	return sphere;
 }
 
-function cylinderModel() {
+function cylinderModel({
+	r = 1.00,
+	g = 0.00,
+	b = 0.00
+} = {}) {
 	var cylinder = new emptyModelFeatures();
 
 	cylinder.vertices = [
@@ -303,6 +320,14 @@ function cylinderModel() {
 		-1.0, 1.0, 0.0
 	];
 
+	cylinder.colors = [];
+
+	for (let k = 0; k < cylinder.vertices.length; k++) {
+		cylinder.colors.push(r);
+		cylinder.colors.push(g);
+		cylinder.colors.push(b);
+	}
+
 	computeVertexNormals(cylinder.vertices, cylinder.normals);
 
 	return cylinder;
@@ -318,18 +343,53 @@ function cylinderModel() {
 //  Instantiating scene models
 //
 
-var sceneModels = [];
+
+let sceneModels = [];
+let i, j;
 
 // Tabuleiro
-const board = new cubeModel(3);
+const board = new simpleCubeModel({r:0.2,g:0.2,b:0.2});
 
 board.sx = 1;
-board.sy = 0.04;
+board.sy = 0.02;
 board.sz = 1;
 
-console.log(board);
+board.tz = -0.125;
+board.ty = -0.01;
 
 sceneModels.push(board);
+
+let boardTile;
+const sxBoardTile = szBoardTile = 0.12;
+const syBoardTile = 0.01;
+let txBoardTile;
+const tyBoardTile = 0.01;
+let tzBoardTile = 0.75;
+
+for (i = 0; i < 8; i++) {
+
+	txBoardTile = -0.875;
+
+	for (j = 0; j < 8; j++) {
+		boardTile = ((j + i) % 2) === 0 ? new simpleCubeModel({r:1,g:1,b:0.75}) : new simpleCubeModel();
+
+		boardTile.sx = sxBoardTile;
+		boardTile.sy = syBoardTile;
+		boardTile.sz = szBoardTile;
+
+		boardTile.tx = txBoardTile;
+		boardTile.ty = tyBoardTile;
+		boardTile.tz = tzBoardTile;
+
+		sceneModels.push(boardTile);
+
+		txBoardTile += 0.25;
+	}
+
+	tzBoardTile -= 0.25;
+}
+
+console.log(sceneModels);
 
 
 let piece;
@@ -338,54 +398,60 @@ let txPiece;
 const tyPiece = 0.05;
 let tzPiece = 0.75;
 
+
 // Player 1 pieces
-for(i = 0; i < 3; i++){
+for (i = 0; i < 3; i++) {
 
-	txPiece = (i % 2) !== 0 ? -0.625  : -0.875;
+	txPiece = (i % 2) !== 0 ? -0.625 : -0.875;
 
-	for (let j = 0; j < 4; j++) {
-		piece = new cylinderModel();
-	
+	for (j = 0; j < 4; j++) {
+		piece = new cylinderModel({
+			r: 0,
+			g: 0,
+			b: 0.12
+		});
+
 		piece.sx = sxPiece;
 		piece.sy = syPiece;
 		piece.sz = szPiece;
-	
+
 		piece.tx = txPiece;
 		piece.ty = tyPiece;
 		piece.tz = tzPiece;
-	
+
 		sceneModels.push(piece);
-	
+
 		txPiece += 0.5;
 	}
 
-	
 	tzPiece -= 0.25;
 }
 
 // Player 2 pieces
-tzPiece = -0.25;
-for(i = 0; i < 3; i++){
+tzPiece = -0.5;
+for (i = 0; i < 3; i++) {
 
-	txPiece = (i % 2) == 0 ? -0.625  : -0.875;
+	txPiece = (i % 2) == 0 ? -0.625 : -0.875;
 
-	for (let j = 0; j < 4; j++) {
-		piece = new cylinderModel();
-	
+	for (j = 0; j < 4; j++) {
+		piece = new cylinderModel({
+			r: 1,
+			g: 0,
+			b: 0
+		});
+
 		piece.sx = sxPiece;
 		piece.sy = syPiece;
 		piece.sz = szPiece;
-	
+
 		piece.tx = txPiece;
 		piece.ty = tyPiece;
 		piece.tz = tzPiece;
-	
+
 		sceneModels.push(piece);
-	
+
 		txPiece += 0.5;
 	}
 
-	
 	tzPiece -= 0.25;
 }
-
