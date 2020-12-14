@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <title>Checkers</title>
+
+        <link rel="stylesheet" href="styles/styles.css">
+
+        <script type="text/javascript" src="scripts/core/webgl-utils.js"></script>      <!-- Some useful functions for browser compatibility -->
+        <script type="text/javascript" src="scripts/core/maths.js"></script>           <!-- Handling vectors and matrices -->
+        <script type="text/javascript" src="scripts/models/models.js"></script>         <!-- Processing triangle mesh models -->
+        <script type="text/javascript" src="scripts/lights/lightSources.js"></script>   <!-- Creating the light sources -->
+        <script type="text/javascript" src="scripts/models/sceneModels.js"></script>    <!-- Creating the scene models -->
+        <script type="text/javascript" src="scripts/core/initShaders.js"></script>      <!-- WebGL code -->
+        <script type="text/javascript" src="scripts/game/draughts.js"></script>
+        <script type="text/javascript" src="scripts/game/board.js"></script>
+        <script type="text/javascript" src="scripts/game/piece.js"></script>
+
+        <script id="shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+            attribute vec3 aVertexColor;
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+            varying vec4 vertexColor;
+            
+            void main(void) {
+                // To allow seeing the points drawn
+                gl_PointSize = 5.0;
+                
+                // Just converting the (x,y,z) vertices to Homogeneous Coord.
+                // And multiplying by the Projection and the Model-View matrix
+                gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+                
+                // Converting the RGB color value to RGBA
+                vertexColor = vec4(aVertexColor, 1.0);
+            }
+        </script>
+
+        <script id="shader-fs" type="x-shader/x-fragment">
+            precision mediump float;
+            varying vec4 vertexColor;
+            void main(void) {
+                // Using the passed vertex color
+                gl_FragColor = vertexColor;
+            }
+        </script>
+    </head>
+    <body onload="runWebGL();">
+        <div style="text-align: center">
+            <h1>Checkers</h1>
+            <canvas id="checkers" width="700" height="800"></canvas>
+            <p id="fps"> fps: </p>
+            <p>Choose the <b>rendering mode</b>:
+                <select id="rendering-mode-selection">
+                    <option value="0">Filled Triangles</option>
+                    <option value="1">Wireframe</option>
+                    <option value="2">Vertices</option>
+                </select>
+        </div>
+    </body>
+</html>

@@ -9,8 +9,6 @@
 //  J. Madeira - November 2017 + November 2018
 //
 //////////////////////////////////////////////////////////////////////////////
-
-
 //----------------------------------------------------------------------------
 //
 // Global Variables
@@ -528,15 +526,24 @@ function initWebGL(canvas) {
 
 function runWebGL() {
 
-	let canvas = document.getElementById("my-canvas");
+	let canvas = document.getElementById("checkers");
 
-	initWebGL(canvas);
+	const board = new Board(8);
 
-	shaderProgram = initShaders(gl);
+	console.log("Board", board);
 
-	setEventListeners(canvas);
+	console.log(board.getMoveOpts(0))
+	console.log(board.getMoveOpts(8))
+	console.log(board.getMoveOpts(16));
+	console.log(board.getMoveOpts(24));
 
-	tick(); // A timer controls the rendering / animation    
+	// initWebGL(canvas);
 
-	outputInfos();
+	// shaderProgram = initShaders(gl);
+
+	// setEventListeners(canvas);
+
+	// tick(); // A timer controls the rendering / animation    
+
+	// outputInfos();
 }
