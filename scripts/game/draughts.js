@@ -282,6 +282,7 @@ let lastTime = 0;
 let globalDirection = "";
 let moveTimes = 1;
 let locked = 0;
+let waitingKey = true;
 
 
 function animate() {
@@ -312,6 +313,7 @@ function animate() {
 					break;
 			}
 			locked -= 1;
+			if (locked === 0) waitingKey = true;
 		}
 	}
 
@@ -424,6 +426,7 @@ const keys = {
 function handleKeys() {
 	for (const value of Object.values(keys)) {
 		if (value.isPressed) {
+			waitingKey = false;
 			value.performAction();
 		}
 	}
@@ -489,7 +492,7 @@ function tick() {
 
 	// NEW --- Processing keyboard events 
 
-	if (locked === 0) {
+	if (waitingKey) {
 		handleKeys();
 	}
 
