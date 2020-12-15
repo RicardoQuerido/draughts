@@ -282,7 +282,6 @@ let lastTime = 0;
 let globalDirection = "";
 let moveTimes = 1;
 let locked = 0;
-let waitingKey = true;
 
 
 function animate() {
@@ -313,7 +312,6 @@ function animate() {
 					break;
 			}
 			locked -= 1;
-			if (locked === 0) waitingKey = true;
 		}
 	}
 
@@ -340,7 +338,6 @@ function move(direction, maxMoves = 1) {
 function highlightPiece(newPieceId) {
 	const [r, g, b] = pieceModels[highlightedPiece].defaultColor;
 
-	console.log("nice");
 	// TODO: change to proper condition
 	if (newPieceId >= 0 && newPieceId < 12) {
 		pieceModels[highlightedPiece].chageColor(r, g, b);
@@ -426,7 +423,6 @@ const keys = {
 function handleKeys() {
 	for (const value of Object.values(keys)) {
 		if (value.isPressed) {
-			waitingKey = false;
 			value.performAction();
 		}
 	}
@@ -492,7 +488,7 @@ function tick() {
 
 	// NEW --- Processing keyboard events 
 
-	if (waitingKey) {
+	if (locked === 0) {
 		handleKeys();
 	}
 
