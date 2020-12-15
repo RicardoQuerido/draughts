@@ -229,7 +229,6 @@ function drawScene() {
 
 	pos_Viewer[3] = 1.0;
 
-
 	// Passing the Projection Matrix to apply the current projection
 
 	var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
@@ -279,7 +278,48 @@ function drawScene() {
 
 // Animation --- Updating transformation parameters
 
+let lastTime = 0;
+let direction = "";
+let moveTimes = 1;
+let locked = 0;
+
+
 function animate() {
+
+	let timeNow = new Date().getTime();
+
+	if (lastTime != 0) {
+		
+		if (locked === 0) {
+			currentlyMoving = null;
+			direction = "";
+		}
+
+		if (currentlyMoving) {
+			switch (direction) {
+				case "northwest":
+					pieceModels[highlightedPiece].tx -= 0.01;
+					pieceModels[highlightedPiece].tz -= 0.01;
+					break;
+				case "northeast":
+					pieceModels[highlightedPiece].tx += 0.01;
+					pieceModels[highlightedPiece].tz -= 0.01;
+					break;
+				case "southwest":
+					pieceModels[highlightedPiece].tx -= 0.01;
+					pieceModels[highlightedPiece].tz += 0.01;
+					break;
+				case "southeast":
+					pieceModels[highlightedPiece].tx += 0.01;
+					pieceModels[highlightedPiece].tz += 0.01;
+					break;
+			}
+			locked -= 1; 
+
+		}
+	}
+
+	lastTime = timeNow;
 
 }
 //----------------------------------------------------------------------------
@@ -288,10 +328,12 @@ function animate() {
 
 // Adapted from www.learningwebgl.com
 
-var currentlyPressedKeys = {};
+let currentlyPressedKeys = {};
 pieceModels[highlightedPiece].chageColor(1, 0, 1);
+let currentlyMoving = null;
 
 function handleKeys() {
+	let [r, g, b] = pieceModels[highlightedPiece].defaultColor;
 
 	// Page Up
 	if (currentlyPressedKeys[33]) {
@@ -301,13 +343,57 @@ function handleKeys() {
 	if (currentlyPressedKeys[34]) {
 		globalTz -= 0.25;
 	}
+
+	// Northwest move (q)
+	if (currentlyPressedKeys[81]) {
+		currentlyPressedKeys[81] = false;
+		currentlyMoving = pieceModels[highlightedPiece];
+		pieceModels[highlightedPiece].chageColor(r, g, b);
+
+		direction = "northwest";
+		locked = 25; 
+
+	}
+	// northeast move (w)
+	if (currentlyPressedKeys[87]) {
+		currentlyPressedKeys[87] = false;
+		currentlyMoving = pieceModels[highlightedPiece];
+		pieceModels[highlightedPiece].chageColor(r, g, b);
+
+		direction = "northeast";
+		locked = 25;		
+
+	}
+	// Southwest (a)
+	if (currentlyPressedKeys[65]) {
+		currentlyPressedKeys[65] = false;
+		currentlyMoving = pieceModels[highlightedPiece];
+		pieceModels[highlightedPiece].chageColor(r, g, b);
+
+		direction = "southwest";
+		locked = 25; 
+
+	}
+	// Southeast (s)
+	if (currentlyPressedKeys[83]) {
+		currentlyPressedKeys[83] = false;
+		currentlyMoving = pieceModels[highlightedPiece];
+		pieceModels[highlightedPiece].chageColor(r, g, b);
+
+		direction = "southeast";
+		locked = 25; 
+
+	}
+
 	// Left cursor key
 	if (currentlyPressedKeys[37]) {
 		currentlyPressedKeys[37] = false;
+
 		if (highlightedPiece > 0) {
-			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			pieceModels[highlightedPiece].chageColor(r, g, b);
 			highlightedPiece -= 1;
 			pieceModels[highlightedPiece].chageColor(1, 0, 1);
+			// showMoves(highlightedPiece);
 		}
 	}
 	// Right cursor key
@@ -315,7 +401,7 @@ function handleKeys() {
 		currentlyPressedKeys[39] = false;
 
 		if (highlightedPiece < (pieceModels.length / 2) - 1) {
-			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			pieceModels[highlightedPiece].chageColor(r, g, b);
 			highlightedPiece += 1;
 			pieceModels[highlightedPiece].chageColor(1, 0, 1);
 		}
@@ -326,7 +412,7 @@ function handleKeys() {
 		currentlyPressedKeys[38] = false;
 
 		if (highlightedPiece < (pieceModels.length / 2) - 4) {
-			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			pieceModels[highlightedPiece].chageColor(r, g, b);
 			highlightedPiece += 4;
 			pieceModels[highlightedPiece].chageColor(1, 0, 1);
 		}
@@ -337,7 +423,7 @@ function handleKeys() {
 		currentlyPressedKeys[40] = false;
 
 		if (highlightedPiece > 3) {
-			pieceModels[highlightedPiece].chageColor(0, 0, 0);
+			pieceModels[highlightedPiece].chageColor(r, g, b);
 			highlightedPiece -= 4;
 			pieceModels[highlightedPiece].chageColor(1, 0, 1);
 		}
@@ -404,7 +490,9 @@ function tick() {
 
 	// NEW --- Processing keyboard events 
 
-	handleKeys();
+	if(locked === 0) {
+		handleKeys();
+	}
 
 	drawScene();
 
@@ -436,12 +524,10 @@ function setEventListeners(canvas) {
 	// NEW ---Handling the keyboard
 
 	function handleKeyDown(event) {
-
 		currentlyPressedKeys[event.keyCode] = true;
 	}
 
 	function handleKeyUp(event) {
-
 		currentlyPressedKeys[event.keyCode] = false;
 	}
 
@@ -537,13 +623,13 @@ function runWebGL() {
 	console.log(board.getMoveOpts(16));
 	console.log(board.getMoveOpts(24));
 
-	// initWebGL(canvas);
+	initWebGL(canvas);
 
-	// shaderProgram = initShaders(gl);
+	shaderProgram = initShaders(gl);
 
-	// setEventListeners(canvas);
+	setEventListeners(canvas);
 
-	// tick(); // A timer controls the rendering / animation    
+	tick(); // A timer controls the rendering / animation    
 
-	// outputInfos();
+	outputInfos();
 }
