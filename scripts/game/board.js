@@ -14,14 +14,26 @@ class Board {
         if (size < 6) {
             return null;
         }
-
+        
         const generate = (s, w) => {
             var set = [];
-            for (var i = 0; i < s; i++) {
-                if (w) {
-                    set.push(new Piece(i, i, true, PIECE_MODEL), new Piece(s + i, i + s, true, PIECE_MODEL));
-                } else {
-                    set.push(new Piece(s * 2 + i, s * (s-2) + i, false, PIECE_MODEL), new Piece(s * 3 + i, s * (s-1) + i, false, PIECE_MODEL));
+            const boardSize = s * s - 1
+            const maxPlayerPieces = s * 3 / 2;
+
+            for (var i = -2; i <= (s-2); i+=2) {
+                for (var j = 0; j <= 2; j++) {
+                    let position = i + j * (s + 1);
+                    let id = Math.floor(position / 2)
+
+                    if (i + j >= 0 && i + j < s) {
+
+                        if (!w) {
+                            position = boardSize - position;
+                            id = (maxPlayerPieces * 2 - 1) - id;
+                        }
+
+                        set.push(new Piece(id, position, w, PIECE_MODEL));
+                    }
                 }
             }
             return set;
