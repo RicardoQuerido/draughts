@@ -139,8 +139,8 @@ class Board {
         this.pieces.black = this.pieces.black.filter(_ => _.id !== id);
     }
 
-    move(id, direction, moves, distance) {
-        const move = moves[direction];
+    move(id, direction, distance) {
+        const move = this.getMoveOpts(id)[direction];
         const newPos = distance === move.maxMoves ? move.position : this.resolveFinalPosition(direction, moves, distance);
         const piece = this.getPieceById(id)
         const { isKing, white } = piece;

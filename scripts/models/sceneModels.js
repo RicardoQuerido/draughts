@@ -22,7 +22,7 @@ function emptyModelFeatures() {
 
 	this.colors = [];
 	
-	this.chageColor = (r,g,b) => {
+	this.changeColor = (r,g,b) => {
 		this.colors = [];
 		for (let k = 0; k < this.vertices.length; k++) {
 			this.colors.push(r);

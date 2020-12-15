@@ -324,15 +324,29 @@ function animate() {
 
 // Adapted from www.learningwebgl.com
 
-let currentlyPressedKeys = {};
-pieceModels[highlightedPiece].chageColor(1, 0, 1);
+pieceModels[highlightedPiece].changeColor(1, 0, 1);
+const globalBoard = new Board(8);
+let highlightedTiles = [];
 
-function move(direction, maxMoves = 1) {
+function makeMove(direction, maxMoves = 1) {
 	const [r, g, b] = pieceModels[highlightedPiece].defaultColor;
-	pieceModels[highlightedPiece].chageColor(r, g, b);
+	globalBoard.move(highlightedPiece, direction, maxMoves);
+
+	pieceModels[highlightedPiece].changeColor(r, g, b);
 
 	globalDirection = direction;
 	locked = 25 * maxMoves;
+	console.log(globalBoard);
+}
+
+function highlightMoves(pieceId) {
+	const moves = globalBoard.getMoveOpts(pieceId);
+	for (const value of Object.values(moves)) {
+		if (value.maxMoves > 0) {
+			boardTileModels[value.position].changeColor(0,1,0);
+			highlightedTiles.push(boardTileModels[value.position]);
+		}
+	}
 }
 
 function highlightPiece(newPieceId) {
@@ -340,11 +354,17 @@ function highlightPiece(newPieceId) {
 
 	// TODO: change to proper condition
 	if (newPieceId >= 0 && newPieceId < 12) {
-		pieceModels[highlightedPiece].chageColor(r, g, b);
+		pieceModels[highlightedPiece].changeColor(r, g, b);
 		highlightedPiece = newPieceId;
-		pieceModels[highlightedPiece].chageColor(1, 0, 1);
-	}
+		pieceModels[highlightedPiece].changeColor(1, 0, 1);
 
+		for(let t = 0; t < highlightedTiles.length; t++) {
+			const [tr,tg,tb] = highlightedTiles[t].defaultColor;
+			highlightedTiles[t].changeColor(tr,tg,tb);
+		}
+		highlightedTiles = [];
+		highlightMoves(newPieceId);
+	}
 }
 
 // dicionario de peças
@@ -365,28 +385,28 @@ const keys = {
 		isPressed: false,
 		performAction: () => {
 			keys["q"].isPressed = false;
-			move("northwest");
+			makeMove("northwest");
 		}
 	},
 	"w": {
 		isPressed: false,
 		performAction: () => {
 			keys["w"].isPressed = false;
-			move("northeast");
+			makeMove("northeast");
 		}
 	},
 	"a": {
 		isPressed: false,
 		performAction: () => {
 			keys["a"].isPressed = false;
-			move("southwest");
+			makeMove("southwest");
 		}
 	},
 	"s": {
 		isPressed: false,
 		performAction: () => {
 			keys["s"].isPressed = false;
-			move("southeast");
+			makeMove("southeast");
 		}
 	},
 	"ArrowLeft": {
@@ -421,6 +441,7 @@ const keys = {
 
 
 function handleKeys() {
+	if (locked > 0) return;
 	for (const value of Object.values(keys)) {
 		if (value.isPressed) {
 			value.performAction();
@@ -606,19 +627,16 @@ function initWebGL(canvas) {
 }
 
 //----------------------------------------------------------------------------
-
 function runWebGL() {
 
 	let canvas = document.getElementById("checkers");
 
-	const board = new Board(8);
+	console.log("Board", globalBoard);
 
-	console.log("Board", board);
-
-	console.log(board.getMoveOpts(0))
-	console.log(board.getMoveOpts(8))
-	console.log(board.getMoveOpts(16));
-	console.log(board.getMoveOpts(23));
+	console.log(globalBoard.getMoveOpts(0))
+	console.log(globalBoard.getMoveOpts(8))
+	console.log(globalBoard.getMoveOpts(16));
+	console.log(globalBoard.getMoveOpts(23));
 
 	initWebGL(canvas);
 
