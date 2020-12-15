@@ -114,18 +114,51 @@ class Board {
     getMoveOpts(id) {
         const { position, isKing, white } = this.getPieceById(id);
 
-        const noMoves = { position, maxMoves: 0 }
+        const noMoves = { position, maxMoves: 0, startPos: position }
         const maxMovesDir = {
-            northwest: (!white && isKing) || white ? this.resolveMove(position, white, isKing, -1, 1) : noMoves,
-            northeast: (!white && isKing) || white ? this.resolveMove(position, white, isKing, 1, 1) : noMoves,
-            southwest: (white && isKing) || !white ? this.resolveMove(position, white, isKing, -1, -1) : noMoves,
-            southeast: (white && isKing) || !white ? this.resolveMove(position, white, isKing, 1, -1) : noMoves 
+            northwest: (!white && isKing) || white ? {startPos: position, ...this.resolveMove(position, white, isKing, -1, 1)} : noMoves,
+            northeast: (!white && isKing) || white ? {startPos: position, ...this.resolveMove(position, white, isKing, 1, 1)} : noMoves,
+            southwest: (white && isKing) || !white ? {startPos: position, ...this.resolveMove(position, white, isKing, -1, -1)} : noMoves,
+            southeast: (white && isKing) || !white ? {startPos: position, ...this.resolveMove(position, white, isKing, 1, -1)} : noMoves 
         }
 
         return maxMovesDir;
     }
 
-    move(id, opt) {
-        return null;
+    resolveFinalPosition(direction, moves, distance) {
+        return {
+            northwest: (d, m) => m['northwest'].startPos + (this.size * -1 * d) +  1 * d,
+            northeast: (d, m) => m['northeast'].startPos + (this.size *  1 * d) +  1 * d,
+            southwest: (d, m) => m['southwest'].startPos + (this.size * -1 * d) + -1 * d,
+            southeast: (d, m) => m['southeast'].startPos + (this.size *  1 * d) + -1 * d,
+        }[direction](distance, moves);
+    }
+
+    removePiece(id) {
+        this.pieces.white = this.pieces.white.filter(_ => _.id !== id);
+        this.pieces.black = this.pieces.black.filter(_ => _.id !== id);
+    }
+
+    move(id, direction, moves, distance) {
+        const move = moves[direction];
+        const newPos = distance === move.maxMoves ? move.position : this.resolveFinalPosition(direction, moves, distance);
+        const piece = this.getPieceById(id)
+        const { isKing, white } = piece;
+
+
+        piece.position = newPos;
+
+        if (move.atePiece && move.maxMoves === distance) {
+            this.removePiece(move.atePiece.id);
+        }
+
+        if (
+            !isKing &&
+            ((white && this.size - Math.floor(newPos / this.size) + 1 === 0) ||
+            (!white && Math.floor(newPos / this.size) === 0))
+        ) {
+            piece.upgrade();
+        }
+
     }
 }
