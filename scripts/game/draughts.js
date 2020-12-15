@@ -279,7 +279,7 @@ function drawScene() {
 // Animation --- Updating transformation parameters
 
 let lastTime = 0;
-let direction = "";
+let globalDirection = "";
 let moveTimes = 1;
 let locked = 0;
 
@@ -289,14 +289,11 @@ function animate() {
 	let timeNow = new Date().getTime();
 
 	if (lastTime != 0) {
-		
-		if (locked === 0) {
-			currentlyMoving = null;
-			direction = "";
-		}
 
-		if (currentlyMoving) {
-			switch (direction) {
+		if (locked === 0) {
+			globalDirection = "";
+		} else {
+			switch (globalDirection) {
 				case "northwest":
 					pieceModels[highlightedPiece].tx -= 0.01;
 					pieceModels[highlightedPiece].tz -= 0.01;
@@ -314,8 +311,7 @@ function animate() {
 					pieceModels[highlightedPiece].tz += 0.01;
 					break;
 			}
-			locked -= 1; 
-
+			locked -= 1;
 		}
 	}
 
@@ -330,102 +326,105 @@ function animate() {
 
 let currentlyPressedKeys = {};
 pieceModels[highlightedPiece].chageColor(1, 0, 1);
-let currentlyMoving = null;
+
+function move(direction, maxMoves = 1) {
+	const [r, g, b] = pieceModels[highlightedPiece].defaultColor;
+	pieceModels[highlightedPiece].chageColor(r, g, b);
+
+	globalDirection = direction;
+	locked = 25 * maxMoves;
+}
+
+function highlightPiece(newPieceId) {
+	const [r, g, b] = pieceModels[highlightedPiece].defaultColor;
+
+	console.log("nice");
+	// TODO: change to proper condition
+	if (newPieceId >= 0 && newPieceId < 12) {
+		pieceModels[highlightedPiece].chageColor(r, g, b);
+		highlightedPiece = newPieceId;
+		pieceModels[highlightedPiece].chageColor(1, 0, 1);
+	}
+
+}
+
+// dicionario de peças
+const keys = {
+	"PageUp": {
+		isPressed: false,
+		performAction: () => {
+			globalTz += 0.25;
+		}
+	},
+	"PageDown": {
+		isPressed: false,
+		performAction: () => {
+			globalTz -= 0.25;
+		}
+	},
+	"q": {
+		isPressed: false,
+		performAction: () => {
+			keys["q"].isPressed = false;
+			move("northwest");
+		}
+	},
+	"w": {
+		isPressed: false,
+		performAction: () => {
+			keys["w"].isPressed = false;
+			move("northeast");
+		}
+	},
+	"a": {
+		isPressed: false,
+		performAction: () => {
+			keys["a"].isPressed = false;
+			move("southwest");
+		}
+	},
+	"s": {
+		isPressed: false,
+		performAction: () => {
+			keys["s"].isPressed = false;
+			move("southeast");
+		}
+	},
+	"ArrowLeft": {
+		isPressed: false,
+		performAction: () => {
+			keys["ArrowLeft"].isPressed = false;
+			highlightPiece(highlightedPiece - 1);
+		}
+	},
+	"ArrowRight": {
+		isPressed: false,
+		performAction: () => {
+			keys["ArrowRight"].isPressed = false;
+			highlightPiece(highlightedPiece + 1);
+		}
+	},
+	"ArrowUp": {
+		isPressed: false,
+		performAction: () => {
+			keys["ArrowUp"].isPressed = false;
+			highlightPiece(highlightedPiece + 4);
+		}
+	},
+	"ArrowDown": {
+		isPressed: false,
+		performAction: () => {
+			keys["ArrowDown"].isPressed = false;
+			highlightPiece(highlightedPiece - 4);
+		}
+	},
+}
+
 
 function handleKeys() {
-	let [r, g, b] = pieceModels[highlightedPiece].defaultColor;
-
-	// Page Up
-	if (currentlyPressedKeys[33]) {
-		globalTz += 0.25;
-	}
-	// Page Down
-	if (currentlyPressedKeys[34]) {
-		globalTz -= 0.25;
-	}
-
-	// Northwest move (q)
-	if (currentlyPressedKeys[81]) {
-		currentlyPressedKeys[81] = false;
-		currentlyMoving = pieceModels[highlightedPiece];
-		pieceModels[highlightedPiece].chageColor(r, g, b);
-
-		direction = "northwest";
-		locked = 25; 
-
-	}
-	// northeast move (w)
-	if (currentlyPressedKeys[87]) {
-		currentlyPressedKeys[87] = false;
-		currentlyMoving = pieceModels[highlightedPiece];
-		pieceModels[highlightedPiece].chageColor(r, g, b);
-
-		direction = "northeast";
-		locked = 25;		
-
-	}
-	// Southwest (a)
-	if (currentlyPressedKeys[65]) {
-		currentlyPressedKeys[65] = false;
-		currentlyMoving = pieceModels[highlightedPiece];
-		pieceModels[highlightedPiece].chageColor(r, g, b);
-
-		direction = "southwest";
-		locked = 25; 
-
-	}
-	// Southeast (s)
-	if (currentlyPressedKeys[83]) {
-		currentlyPressedKeys[83] = false;
-		currentlyMoving = pieceModels[highlightedPiece];
-		pieceModels[highlightedPiece].chageColor(r, g, b);
-
-		direction = "southeast";
-		locked = 25; 
-
-	}
-
-	// Left cursor key
-	if (currentlyPressedKeys[37]) {
-		currentlyPressedKeys[37] = false;
-
-		if (highlightedPiece > 0) {
-			pieceModels[highlightedPiece].chageColor(r, g, b);
-			highlightedPiece -= 1;
-			pieceModels[highlightedPiece].chageColor(1, 0, 1);
-			// showMoves(highlightedPiece);
-		}
-	}
-	// Right cursor key
-	if (currentlyPressedKeys[39]) {
-		currentlyPressedKeys[39] = false;
-
-		if (highlightedPiece < (pieceModels.length / 2) - 1) {
-			pieceModels[highlightedPiece].chageColor(r, g, b);
-			highlightedPiece += 1;
-			pieceModels[highlightedPiece].chageColor(1, 0, 1);
-		}
-
-	}
-	// Up cursor key
-	if (currentlyPressedKeys[38]) {
-		currentlyPressedKeys[38] = false;
-
-		if (highlightedPiece < (pieceModels.length / 2) - 4) {
-			pieceModels[highlightedPiece].chageColor(r, g, b);
-			highlightedPiece += 4;
-			pieceModels[highlightedPiece].chageColor(1, 0, 1);
-		}
-
-	}
-	// Down cursor key
-	if (currentlyPressedKeys[40]) {
-		currentlyPressedKeys[40] = false;
-
-		if (highlightedPiece > 3) {
-			pieceModels[highlightedPiece].chageColor(r, g, b);
-			highlightedPiece -= 4;
-			pieceModels[highlightedPiece].chageColor(1, 0, 1);
+	for (const value of Object.values(keys)) {
+		if (value.isPressed) {
+			value.performAction();
 		}
 	}
 }
@@ -490,7 +489,7 @@ function tick() {
 
 	// NEW --- Processing keyboard events 
 
-	if(locked === 0) {
+	if (locked === 0) {
 		handleKeys();
 	}
 
@@ -522,18 +521,17 @@ function setEventListeners(canvas) {
 	document.onmousemove = handleMouseMove;
 
 	// NEW ---Handling the keyboard
-
-	function handleKeyDown(event) {
-		currentlyPressedKeys[event.keyCode] = true;
+	document.onkeydown = (event) => {
+		if(keys[event.key]) {
+			keys[event.key].isPressed = true;
+		} 
 	}
 
-	function handleKeyUp(event) {
-		currentlyPressedKeys[event.keyCode] = false;
+	document.onkeyup = (event) => {
+		if(keys[event.key]) {
+			keys[event.key].isPressed = false;
+		} 
 	}
-
-	document.onkeydown = handleKeyDown;
-
-	document.onkeyup = handleKeyUp;
 
 	// Dropdown list
 
@@ -621,7 +619,7 @@ function runWebGL() {
 	console.log(board.getMoveOpts(0))
 	console.log(board.getMoveOpts(8))
 	console.log(board.getMoveOpts(16));
-	console.log(board.getMoveOpts(24));
+	console.log(board.getMoveOpts(23));
 
 	initWebGL(canvas);
 
