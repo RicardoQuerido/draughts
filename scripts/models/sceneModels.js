@@ -31,6 +31,8 @@ function emptyModelFeatures() {
 		}
 	}
 
+	this.defaultColor = [];
+
 
 	// Transformation parameters
 
@@ -161,6 +163,8 @@ function simpleCubeModel({
 
 
 	cube.colors = [];
+
+	cube.defaultColor = [r,g,b];
 	
 	for (let k = 0; k < cube.vertices.length; k++) {
 		cube.colors.push(r);
@@ -324,6 +328,8 @@ function cylinderModel({
 
 	cylinder.colors = [];
 
+	cylinder.defaultColor = [r,g,b];
+
 	for (let k = 0; k < cylinder.vertices.length; k++) {
 		cylinder.colors.push(r);
 		cylinder.colors.push(g);
@@ -393,8 +399,6 @@ for (i = 0; i < 8; i++) {
 	tzBoardTile -= 0.25;
 }
 
-
-
 let piece;
 const sxPiece = syPiece = szPiece = 0.05;
 let txPiece;
@@ -409,9 +413,9 @@ for (i = 0; i < 3; i++) {
 
 	for (j = 0; j < 4; j++) {
 		piece = new cylinderModel({
-			r: 0,
+			r: 1,
 			g: 0,
-			b: 0.12
+			b: 0
 		});
 
 		piece.sx = sxPiece;
@@ -437,10 +441,11 @@ for (i = 0; i < 3; i++) {
 	txPiece = (i % 2) == 0 ? -0.625 : -0.875;
 
 	for (j = 0; j < 4; j++) {
+		
 		piece = new cylinderModel({
-			r: 1,
+			r: 0,
 			g: 0,
-			b: 0
+			b: 0.12
 		});
 
 		piece.sx = sxPiece;
