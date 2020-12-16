@@ -5,6 +5,10 @@ class Piece{
     model;
     isKing = false;
 
+    setId(id) {
+        this.id = id;
+    }
+
     constructor(id, position, white, model) {
         this.id = id;
         this.position = position;
@@ -13,6 +17,7 @@ class Piece{
     }
 
     upgrade() {
+        this.model.sy = 0.04;
         this.isKing = true;
     }
 

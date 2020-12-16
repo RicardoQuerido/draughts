@@ -281,8 +281,8 @@ function drawScene() {
 
 // Animation --- Updating transformation parameters
 const globalBoard = new Board(8);
-const whitePieces = globalBoard.pieces.white;
-const blackPieces = globalBoard.pieces.black;
+let whitePieces = globalBoard.pieces.white;
+let blackPieces = globalBoard.pieces.black;
 
 let currentPiece;
 let highlightedTiles;
@@ -290,7 +290,6 @@ let moves;
 let lastTime;
 let globalDirection;
 let locked;
-
 
 function animate() {
 
@@ -322,10 +321,12 @@ function animate() {
 			}
 			locked -= 1;
 			if (locked === 0) {
-				const nextTurn = globalBoard.isWhiteTurn;
-				globalBoard.isWhiteTurn = !nextTurn;
-				highlightPiece(nextTurn * 11 + 1);
-				highlightMoves(nextTurn * 11 + 1);
+
+				globalBoard.isWhiteTurn = !globalBoard.isWhiteTurn;
+				const nextPiece = globalBoard.isWhiteTurn ? whitePieces[0].id : blackPieces[0].id;
+
+				highlightPiece(nextPiece);
+				highlightMoves(nextPiece);
 			}
 		}
 	}
@@ -348,14 +349,18 @@ function makeMove(direction) {
 
 	globalDirection = direction;
 	locked = 25 * moves[direction].maxMoves;
+	if (moves[direction].ate != undefined) atePiece = true;
 }
 
 function highlightMoves(pieceId) {
 	moves = globalBoard.getMoveOpts(pieceId);
 	for (const value of Object.values(moves)) {
 		if (value.maxMoves > 0) {
-			boardTileModels[value.position].changeColor(0, 1, 0);
-			highlightedTiles.push(boardTileModels[value.position]);
+			const model = boardTileModels[value.position];
+			if (model) {
+				model.changeColor(0, 1, 0);
+				highlightedTiles.push(model);
+			}
 		}
 	}
 }
@@ -387,7 +392,24 @@ function highlightPiece(newPieceId) {
 		clearHighlightedTiles();
 		highlightMoves(newPieceId);
 	}
-}
+};
+
+function resolveNextId(currentPiece, n) {
+	const white = globalBoard.isWhiteTurn;
+	if (white) {
+		const currentIdx = whitePieces.indexOf(currentPiece) + n;
+		if (currentIdx < 0 || currentIdx > whitePieces.length -1) {
+			return currentPiece.id;
+		}
+		return whitePieces[currentIdx].id;
+	} else {
+		const currentIdx = blackPieces.indexOf(currentPiece) + n;
+		if (currentIdx < 0 || currentIdx > blackPieces.length - 1) {
+			return currentPiece.id;
+		}
+		return blackPieces[currentIdx].id;
+	}
+};
 
 // dicionario de peças
 const keys = {
@@ -435,31 +457,30 @@ const keys = {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowLeft"].isPressed = false;
-			highlightPiece(currentPiece.id - 1);
+			highlightPiece(resolveNextId(currentPiece, -1));
 		}
 	},
 	"ArrowRight": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowRight"].isPressed = false;
-			console.log("right");
-			highlightPiece(currentPiece.id + 1);
+			highlightPiece(resolveNextId(currentPiece, 1));
 		}
 	},
 	"ArrowUp": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowUp"].isPressed = false;
-			highlightPiece(currentPiece.id + 4);
+			highlightPiece(resolveNextId(currentPiece, 4));
 		}
 	},
 	"ArrowDown": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowDown"].isPressed = false;
-			highlightPiece(currentPiece.id - 4);
+			highlightPiece(resolveNextId(currentPiece, -4));
 		}
-	},
+	}
 }
 
 
@@ -527,6 +548,13 @@ function handleMouseMove(event) {
 // Timer
 
 function tick() {
+	const whiteWin = blackPieces.length === 0;
+	const blackWin = whitePieces.length === 0;
+	if (whiteWin || blackWin) {
+		alert('Game over! ' + (whiteWin ? 'white' : 'black') + ' wins');
+		location.reload();
+		return;
+	}
 
 	requestAnimFrame(tick);
 
@@ -542,12 +570,10 @@ function tick() {
 }
 
 function linkPieceModels() {
-	for (let i = 0; i < whitePieces.length; i++) {
-		whitePieces[i].model = pieceModels[whitePieces[i].id];
-		blackPieces[i].model = pieceModels[blackPieces[i].id];
-	}
+	whitePieces.forEach((p) => p.model = pieceModels[p.id])
+	blackPieces.forEach((p) => p.model = pieceModels[p.id])
 
-	currentPiece = whitePieces[1];
+	currentPiece = whitePieces[0];
 	currentPiece.model.changeColor(1, 0, 1);
 	highlightedTiles = [];
 	moves = globalBoard.getMoveOpts(currentPiece.id);
@@ -670,11 +696,6 @@ function runWebGL() {
 	let canvas = document.getElementById("checkers");
 
 	console.log("Board", globalBoard);
-
-	console.log(globalBoard.getMoveOpts(0))
-	console.log(globalBoard.getMoveOpts(8))
-	console.log(globalBoard.getMoveOpts(16));
-	console.log(globalBoard.getMoveOpts(23));
 
 	initWebGL(canvas);
 

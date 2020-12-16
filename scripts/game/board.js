@@ -36,7 +36,7 @@ class Board {
                     }
                 }
             }
-            return set;
+            return set.sort((a, b) => a.id <= b.id ? -1 : 1);
         }
 
         this.pieces.white = generate(size, true);
@@ -144,8 +144,19 @@ class Board {
     }
 
     removePiece(id) {
-        this.pieces.white = this.pieces.white.filter(_ => _.id !== id);
-        this.pieces.black = this.pieces.black.filter(_ => _.id !== id);
+        const maxPlayerPieces = this.size * 3 / 2;
+
+        console.log(maxPlayerPieces + id);
+
+        if (id < maxPlayerPieces) {
+            this.pieces.white.splice(id, 1);
+            this.pieces.white.forEach((p, i) => p.id = i);
+        } else {
+            this.pieces.black.splice(id - maxPlayerPieces, 1);
+            this.pieces.black.forEach((p, i) => p.id = (i + maxPlayerPieces));
+        }
+
+        console.log(`Removed ${id}`, this.pieces);
     }
 
     move(id, direction, distance) {
@@ -157,17 +168,17 @@ class Board {
 
         piece.position = newPos;
 
-        if (move.atePiece && move.maxMoves === distance) {
-            this.removePiece(move.atePiece.id);
+        console.log(move.atePiece, move.maxMoves, distance);
+        if (move.ate && move.maxMoves === distance) {
+            this.removePiece(move.ate.id);
         }
 
         if (
             !isKing &&
-            ((white && this.size - Math.floor(newPos / this.size) + 1 === 0) ||
+            ((white && this.size - Math.floor(newPos / this.size) - 1 === 0) ||
             (!white && Math.floor(newPos / this.size) === 0))
         ) {
             piece.upgrade();
         }
-
     }
 }
