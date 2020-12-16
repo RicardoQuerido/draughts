@@ -52,7 +52,6 @@ class Board {
     }
 
     getPieceById(id) {
-        // TODO: maybe change...
         if (id < this.size * 1.5 ) {
             return this.pieces.white.find(_ => _.id === id);
         } else {
@@ -146,8 +145,6 @@ class Board {
     removePiece(id) {
         const maxPlayerPieces = this.size * 3 / 2;
 
-        console.log(maxPlayerPieces + id);
-
         if (id < maxPlayerPieces) {
             this.pieces.white.splice(id, 1);
             this.pieces.white.forEach((p, i) => p.id = i);
@@ -156,7 +153,6 @@ class Board {
             this.pieces.black.forEach((p, i) => p.id = (i + maxPlayerPieces));
         }
 
-        console.log(`Removed ${id}`, this.pieces);
     }
 
     move(id, direction, distance) {
@@ -168,7 +164,6 @@ class Board {
 
         piece.position = newPos;
 
-        console.log(move.atePiece, move.maxMoves, distance);
         if (move.ate && move.maxMoves === distance) {
             this.removePiece(move.ate.id);
         }

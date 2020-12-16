@@ -7,7 +7,6 @@
         <script type="text/javascript" src="scripts/core/webgl-utils.js"></script>      <!-- Some useful functions for browser compatibility -->
         <script type="text/javascript" src="scripts/core/maths.js"></script>           <!-- Handling vectors and matrices -->
         <script type="text/javascript" src="scripts/models/models.js"></script>         <!-- Processing triangle mesh models -->
-        <script type="text/javascript" src="scripts/lights/lightSources.js"></script>   <!-- Creating the light sources -->
         <script type="text/javascript" src="scripts/models/sceneModels.js"></script>    <!-- Creating the scene models -->
         <script type="text/javascript" src="scripts/core/initShaders.js"></script>      <!-- WebGL code -->
         <script type="text/javascript" src="scripts/game/board.js"></script>
@@ -45,16 +44,130 @@
         </script>
     </head>
     <body onload="runWebGL();">
-        <div style="text-align: center">
-            <h1>Checkers</h1>
-            <canvas id="checkers" width="700" height="800"></canvas>
-            <p id="fps"> fps: </p>
-            <p>Choose the <b>rendering mode</b>:
-                <select id="rendering-mode-selection">
-                    <option value="0">Filled Triangles</option>
-                    <option value="1">Wireframe</option>
-                    <option value="2">Vertices</option>
-                </select>
+        <div class="wrapper">
+            <div class="controls">
+                <table>
+                    <th colspan="2">
+                        Controls
+                    </th>
+                    <tr>
+                        <td>
+                            Left
+                        </td>
+                        <td>
+                            Left arrow
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Right
+                        </td>
+                        <td>
+                            Right arrow
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Up
+                        </td>
+                        <td>
+                            Up arrow
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Down
+                        </td>
+                        <td>
+                            Down arrow
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Move northwest
+                        </td>
+                        <td>
+                            Q
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Move northeast
+                        </td>
+                        <td>
+                            E
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Move southwest
+                        </td>
+                        <td>
+                            A
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Move southeast
+                        </td>
+                        <td>
+                            D
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div style="text-align: center">
+                <h1>Checkers</h1>
+                <canvas id="checkers" width="700" height="800"></canvas>
+                <p id="fps"> fps: </p>
+                <p>Choose the <b>rendering mode</b>:
+                    <select id="rendering-mode-selection">
+                        <option value="0">Filled Triangles</option>
+                        <option value="1">Wireframe</option>
+                        <option value="2">Vertices</option>
+                    </select>
+            </div>
+            <div class="legend">
+                <table>
+                    <th colspan="2">
+                        Legend
+                    </th>
+                    <tr>
+                        <td>
+                            Player 1
+                        </td>
+                        <td>
+                            Red pieces
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Player 2
+                        </td>
+                        <td>
+                            Black pieces
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Pink piece
+                        </td>
+                        <td>
+                            Selected piece 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Green square
+                        </td>
+                        <td>
+                            Possible move
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
+        
     </body>
 </html>

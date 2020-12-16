@@ -376,7 +376,6 @@ function clearHighlightedTiles() {
 function highlightPiece(newPieceId) {
 	const [r, g, b] = currentPiece.model.defaultColor;
 
-	// TODO: improve
 	if (globalBoard.isWhiteTurn && newPieceId >= 0 && newPieceId < 12) {
 		currentPiece.model.changeColor(r, g, b);
 		currentPiece = whitePieces[newPieceId];
@@ -495,56 +494,6 @@ function handleKeys() {
 
 //----------------------------------------------------------------------------
 
-// Handling mouse events
-
-var mouseDown = false;
-
-var lastMouseX = null;
-
-var lastMouseY = null;
-
-function handleMouseDown(event) {
-
-	mouseDown = true;
-
-	lastMouseX = event.clientX;
-
-	lastMouseY = event.clientY;
-}
-
-function handleMouseUp(event) {
-
-	mouseDown = false;
-}
-
-function handleMouseMove(event) {
-
-	if (!mouseDown) {
-
-		return;
-	}
-
-	// Rotation angles proportional to cursor displacement
-
-	var newX = event.clientX;
-
-	var newY = event.clientY;
-
-	var deltaX = newX - lastMouseX;
-
-	angleYY += radians(10 * deltaX)
-
-	var deltaY = newY - lastMouseY;
-
-	angleXX += radians(10 * deltaY)
-
-	lastMouseX = newX
-
-	lastMouseY = newY;
-}
-
-//----------------------------------------------------------------------------
-
 // Timer
 
 function tick() {
@@ -557,8 +506,6 @@ function tick() {
 	}
 
 	requestAnimFrame(tick);
-
-	// NEW --- Processing keyboard events 
 
 	if (locked === 0) {
 		handleKeys();
@@ -582,27 +529,9 @@ function linkPieceModels() {
 	locked = 0;
 }
 
-
-//----------------------------------------------------------------------------
-//
-//  User Interaction
-//
-
-function outputInfos() {
-
-}
-
 //----------------------------------------------------------------------------
 
 function setEventListeners(canvas) {
-
-	// NEW ---Handling the mouse
-
-	canvas.onmousedown = handleMouseDown;
-
-	document.onmouseup = handleMouseUp;
-
-	document.onmousemove = handleMouseMove;
 
 	// NEW ---Handling the keyboard
 	document.onkeydown = (event) => {
@@ -695,8 +624,6 @@ function runWebGL() {
 
 	let canvas = document.getElementById("checkers");
 
-	console.log("Board", globalBoard);
-
 	initWebGL(canvas);
 
 	shaderProgram = initShaders(gl);
@@ -707,5 +634,4 @@ function runWebGL() {
 
 	tick(); // A timer controls the rendering / animation    
 
-	outputInfos();
 }

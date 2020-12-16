@@ -1,3 +1,31 @@
+body {
+	background-color: whitesmoke;
+}
+
+.wrapper {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-evenly;
+}
+
+
+th,
+td {
+	font-size: 2rem;
+	padding: 1rem;
+	border: 1px solid black;
+}
+
+th {
+	background-color: wheat;
+
+}
+
+td {
+	background-color: white;
+}
+
 #checkers {
-	border:1px slid #000000;
+	border:1px solid #000000;
 }
