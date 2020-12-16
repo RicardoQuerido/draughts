@@ -256,8 +256,14 @@ function drawScene() {
 			primitiveType);
 	}
 
-	for (var i = 0; i < pieceModels.length; i++) {
-		drawModel(pieceModels[i],
+	for (var i = 0; i < whitePieces.length; i++) {
+		drawModel(whitePieces[i].model,
+			mvMatrix,
+			primitiveType);
+	}
+
+	for (var i = 0; i < blackPieces.length; i++) {
+		drawModel(blackPieces[i].model,
 			mvMatrix,
 			primitiveType);
 	}
@@ -274,6 +280,17 @@ function drawScene() {
 //
 
 // Animation --- Updating transformation parameters
+const globalBoard = new Board(8);
+const whitePieces = globalBoard.pieces.white;
+const blackPieces = globalBoard.pieces.black;
+
+let currentPiece;
+let highlightedTiles;
+let moves;
+let lastTime;
+let globalDirection;
+let locked;
+
 
 function animate() {
 
@@ -287,20 +304,20 @@ function animate() {
 		} else {
 			switch (globalDirection) {
 				case "northwest":
-					pieceModels[currentPiece].tx -= 0.01;
-					pieceModels[currentPiece].tz -= 0.01;
+					currentPiece.model.tx -= 0.01;
+					currentPiece.model.tz -= 0.01;
 					break;
 				case "northeast":
-					pieceModels[currentPiece].tx += 0.01;
-					pieceModels[currentPiece].tz -= 0.01;
+					currentPiece.model.tx += 0.01;
+					currentPiece.model.tz -= 0.01;
 					break;
 				case "southwest":
-					pieceModels[currentPiece].tx -= 0.01;
-					pieceModels[currentPiece].tz += 0.01;
+					currentPiece.model.tx -= 0.01;
+					currentPiece.model.tz += 0.01;
 					break;
 				case "southeast":
-					pieceModels[currentPiece].tx += 0.01;
-					pieceModels[currentPiece].tz += 0.01;
+					currentPiece.model.tx += 0.01;
+					currentPiece.model.tz += 0.01;
 					break;
 			}
 			locked -= 1;
@@ -321,21 +338,13 @@ function animate() {
 // Handling keyboard events
 
 // Adapted from www.learningwebgl.com
-let currentPiece = 0;
-pieceModels[currentPiece].changeColor(1, 0, 1);
-const globalBoard = new Board(8);
-let highlightedTiles = [];
-let moves = globalBoard.getMoveOpts(currentPiece);
-let lastTime = 0;
-let globalDirection = "";
-let locked = 0;
 
 function makeMove(direction) {
 	clearHighlightedTiles();
-	const [r, g, b] = pieceModels[currentPiece].defaultColor;
-	globalBoard.move(currentPiece, direction,  moves[direction].maxMoves);
+	const [r, g, b] = currentPiece.model.defaultColor;
+	globalBoard.move(currentPiece.id, direction, moves[direction].maxMoves);
 
-	pieceModels[currentPiece].changeColor(r, g, b);
+	currentPiece.model.changeColor(r, g, b);
 
 	globalDirection = direction;
 	locked = 25 * moves[direction].maxMoves;
@@ -360,19 +369,20 @@ function clearHighlightedTiles() {
 }
 
 function highlightPiece(newPieceId) {
-	const [r, g, b] = pieceModels[currentPiece].defaultColor;
+	const [r, g, b] = currentPiece.model.defaultColor;
 
+	// TODO: improve
 	if (globalBoard.isWhiteTurn && newPieceId >= 0 && newPieceId < 12) {
-		pieceModels[currentPiece].changeColor(r, g, b);
-		currentPiece = newPieceId;
-		pieceModels[currentPiece].changeColor(1, 0, 1);
+		currentPiece.model.changeColor(r, g, b);
+		currentPiece = whitePieces[newPieceId];
+		currentPiece.model.changeColor(1, 0, 1);
 
 		clearHighlightedTiles();
 		highlightMoves(newPieceId);
 	} else if (!globalBoard.isWhiteTurn && newPieceId >= 12 && newPieceId < 24) {
-		pieceModels[currentPiece].changeColor(r, g, b);
-		currentPiece = newPieceId;
-		pieceModels[currentPiece].changeColor(1, 0, 1);
+		currentPiece.model.changeColor(r, g, b);
+		currentPiece = blackPieces[newPieceId - 12];
+		currentPiece.model.changeColor(1, 0, 1);
 
 		clearHighlightedTiles();
 		highlightMoves(newPieceId);
@@ -425,28 +435,29 @@ const keys = {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowLeft"].isPressed = false;
-			highlightPiece(currentPiece - 1);
+			highlightPiece(currentPiece.id - 1);
 		}
 	},
 	"ArrowRight": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowRight"].isPressed = false;
-			highlightPiece(currentPiece + 1);
+			console.log("right");
+			highlightPiece(currentPiece.id + 1);
 		}
 	},
 	"ArrowUp": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowUp"].isPressed = false;
-			highlightPiece(currentPiece + 4);
+			highlightPiece(currentPiece.id + 4);
 		}
 	},
 	"ArrowDown": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowDown"].isPressed = false;
-			highlightPiece(currentPiece - 4);
+			highlightPiece(currentPiece.id - 4);
 		}
 	},
 }
@@ -528,6 +539,21 @@ function tick() {
 	drawScene();
 
 	animate();
+}
+
+function linkPieceModels() {
+	for (let i = 0; i < whitePieces.length; i++) {
+		whitePieces[i].model = pieceModels[whitePieces[i].id];
+		blackPieces[i].model = pieceModels[blackPieces[i].id];
+	}
+
+	currentPiece = whitePieces[1];
+	currentPiece.model.changeColor(1, 0, 1);
+	highlightedTiles = [];
+	moves = globalBoard.getMoveOpts(currentPiece.id);
+	lastTime = 0;
+	globalDirection = "";
+	locked = 0;
 }
 
 
@@ -655,6 +681,8 @@ function runWebGL() {
 	shaderProgram = initShaders(gl);
 
 	setEventListeners(canvas);
+
+	linkPieceModels();
 
 	tick(); // A timer controls the rendering / animation    
 
