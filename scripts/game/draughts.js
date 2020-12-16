@@ -432,10 +432,10 @@ const keys = {
 			makeMove("northwest");
 		}
 	},
-	"w": {
+	"e": {
 		isPressed: false,
 		performAction: () => {
-			keys["w"].isPressed = false;
+			keys["e"].isPressed = false;
 			makeMove("northeast");
 		}
 	},
@@ -446,10 +446,10 @@ const keys = {
 			makeMove("southwest");
 		}
 	},
-	"s": {
+	"d": {
 		isPressed: false,
 		performAction: () => {
-			keys["s"].isPressed = false;
+			keys["d"].isPressed = false;
 			makeMove("southeast");
 		}
 	},
