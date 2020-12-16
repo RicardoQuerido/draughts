@@ -52,9 +52,6 @@ var projectionType = 1;
 
 var pos_Viewer = [0.0, 0.0, 0.0, 1.0];
 
-let highlightedPiece = 0;
-
-
 
 //----------------------------------------------------------------------------
 //
@@ -278,12 +275,6 @@ function drawScene() {
 
 // Animation --- Updating transformation parameters
 
-let lastTime = 0;
-let globalDirection = "";
-let moveTimes = 1;
-let locked = 0;
-
-
 function animate() {
 
 	let timeNow = new Date().getTime();
@@ -292,26 +283,33 @@ function animate() {
 
 		if (locked === 0) {
 			globalDirection = "";
+
 		} else {
 			switch (globalDirection) {
 				case "northwest":
-					pieceModels[highlightedPiece].tx -= 0.01;
-					pieceModels[highlightedPiece].tz -= 0.01;
+					pieceModels[currentPiece].tx -= 0.01;
+					pieceModels[currentPiece].tz -= 0.01;
 					break;
 				case "northeast":
-					pieceModels[highlightedPiece].tx += 0.01;
-					pieceModels[highlightedPiece].tz -= 0.01;
+					pieceModels[currentPiece].tx += 0.01;
+					pieceModels[currentPiece].tz -= 0.01;
 					break;
 				case "southwest":
-					pieceModels[highlightedPiece].tx -= 0.01;
-					pieceModels[highlightedPiece].tz += 0.01;
+					pieceModels[currentPiece].tx -= 0.01;
+					pieceModels[currentPiece].tz += 0.01;
 					break;
 				case "southeast":
-					pieceModels[highlightedPiece].tx += 0.01;
-					pieceModels[highlightedPiece].tz += 0.01;
+					pieceModels[currentPiece].tx += 0.01;
+					pieceModels[currentPiece].tz += 0.01;
 					break;
 			}
 			locked -= 1;
+			if (locked === 0) {
+				const nextTurn = globalBoard.isWhiteTurn;
+				globalBoard.isWhiteTurn = !nextTurn;
+				highlightPiece(nextTurn * 11 + 1);
+				highlightMoves(nextTurn * 11 + 1);
+			}
 		}
 	}
 
@@ -323,46 +321,60 @@ function animate() {
 // Handling keyboard events
 
 // Adapted from www.learningwebgl.com
-
-pieceModels[highlightedPiece].changeColor(1, 0, 1);
+let currentPiece = 0;
+pieceModels[currentPiece].changeColor(1, 0, 1);
 const globalBoard = new Board(8);
 let highlightedTiles = [];
+let moves = globalBoard.getMoveOpts(currentPiece);
+let lastTime = 0;
+let globalDirection = "";
+let locked = 0;
 
-function makeMove(direction, maxMoves = 1) {
-	const [r, g, b] = pieceModels[highlightedPiece].defaultColor;
-	globalBoard.move(highlightedPiece, direction, maxMoves);
+function makeMove(direction) {
+	clearHighlightedTiles();
+	const [r, g, b] = pieceModels[currentPiece].defaultColor;
+	globalBoard.move(currentPiece, direction,  moves[direction].maxMoves);
 
-	pieceModels[highlightedPiece].changeColor(r, g, b);
+	pieceModels[currentPiece].changeColor(r, g, b);
 
 	globalDirection = direction;
-	locked = 25 * maxMoves;
-	console.log(globalBoard);
+	locked = 25 * moves[direction].maxMoves;
 }
 
 function highlightMoves(pieceId) {
-	const moves = globalBoard.getMoveOpts(pieceId);
+	moves = globalBoard.getMoveOpts(pieceId);
 	for (const value of Object.values(moves)) {
 		if (value.maxMoves > 0) {
-			boardTileModels[value.position].changeColor(0,1,0);
+			boardTileModels[value.position].changeColor(0, 1, 0);
 			highlightedTiles.push(boardTileModels[value.position]);
 		}
 	}
 }
 
+function clearHighlightedTiles() {
+	for (let t = 0; t < highlightedTiles.length; t++) {
+		const [tr, tg, tb] = highlightedTiles[t].defaultColor;
+		highlightedTiles[t].changeColor(tr, tg, tb);
+	}
+	highlightedTiles = [];
+}
+
 function highlightPiece(newPieceId) {
-	const [r, g, b] = pieceModels[highlightedPiece].defaultColor;
+	const [r, g, b] = pieceModels[currentPiece].defaultColor;
 
-	// TODO: change to proper condition
-	if (newPieceId >= 0 && newPieceId < 12) {
-		pieceModels[highlightedPiece].changeColor(r, g, b);
-		highlightedPiece = newPieceId;
-		pieceModels[highlightedPiece].changeColor(1, 0, 1);
+	if (globalBoard.isWhiteTurn && newPieceId >= 0 && newPieceId < 12) {
+		pieceModels[currentPiece].changeColor(r, g, b);
+		currentPiece = newPieceId;
+		pieceModels[currentPiece].changeColor(1, 0, 1);
 
-		for(let t = 0; t < highlightedTiles.length; t++) {
-			const [tr,tg,tb] = highlightedTiles[t].defaultColor;
-			highlightedTiles[t].changeColor(tr,tg,tb);
-		}
-		highlightedTiles = [];
+		clearHighlightedTiles();
+		highlightMoves(newPieceId);
+	} else if (!globalBoard.isWhiteTurn && newPieceId >= 12 && newPieceId < 24) {
+		pieceModels[currentPiece].changeColor(r, g, b);
+		currentPiece = newPieceId;
+		pieceModels[currentPiece].changeColor(1, 0, 1);
+
+		clearHighlightedTiles();
 		highlightMoves(newPieceId);
 	}
 }
@@ -413,28 +425,28 @@ const keys = {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowLeft"].isPressed = false;
-			highlightPiece(highlightedPiece - 1);
+			highlightPiece(currentPiece - 1);
 		}
 	},
 	"ArrowRight": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowRight"].isPressed = false;
-			highlightPiece(highlightedPiece + 1);
+			highlightPiece(currentPiece + 1);
 		}
 	},
 	"ArrowUp": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowUp"].isPressed = false;
-			highlightPiece(highlightedPiece + 4);
+			highlightPiece(currentPiece + 4);
 		}
 	},
 	"ArrowDown": {
 		isPressed: false,
 		performAction: () => {
 			keys["ArrowDown"].isPressed = false;
-			highlightPiece(highlightedPiece - 4);
+			highlightPiece(currentPiece - 4);
 		}
 	},
 }
@@ -542,15 +554,15 @@ function setEventListeners(canvas) {
 
 	// NEW ---Handling the keyboard
 	document.onkeydown = (event) => {
-		if(keys[event.key]) {
+		if (keys[event.key]) {
 			keys[event.key].isPressed = true;
-		} 
+		}
 	}
 
 	document.onkeyup = (event) => {
-		if(keys[event.key]) {
+		if (keys[event.key]) {
 			keys[event.key].isPressed = false;
-		} 
+		}
 	}
 
 	// Dropdown list

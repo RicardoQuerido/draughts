@@ -400,7 +400,8 @@ for (i = 0; i < 8; i++) {
 }
 
 let piece;
-const sxPiece = syPiece = szPiece = 0.05;
+const sxPiece = szPiece = 0.05;
+const syPiece = 0.02;
 let txPiece;
 const tyPiece = 0.05;
 let tzPiece = 0.75;

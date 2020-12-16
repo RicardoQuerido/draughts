@@ -43,8 +43,17 @@ class Board {
         this.pieces.black = generate(size, false)
     }
 
+    get isWhiteTurn() {
+        return this.isWhiteTurn;
+    }
+
+    set isWhiteTurn(bool) {
+        this.isWhiteTurn = bool;
+    }
+
     getPieceById(id) {
-        if (id < this.size * 2 ) {
+        // TODO: maybe change...
+        if (id < this.size * 1.5 ) {
             return this.pieces.white.find(_ => _.id === id);
         } else {
             return this.pieces.black.find(_ => _.id === id);
